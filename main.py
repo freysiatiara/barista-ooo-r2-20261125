@@ -17,16 +17,27 @@ ENTRY = (
 OUTPUT_PATH = "/output/entry.txt"
 
 
-def main() -> None:
-    # Validation guard: the gate requires 1-280 chars, UTF-8, single
-    # line, not only whitespace. The text itself is never altered here.
-    if not (1 <= len(ENTRY) <= 280):
+def _validate_entry(text: str) -> None:
+    """Validate the entry text before writing.
+
+    The gate requires 1-280 characters, UTF-8, a single line, and
+    not only whitespace. The text itself is never altered here.
+    """
+    if not isinstance(text, str):
+        raise ValueError("entry must be a string")
+    if not (1 <= len(text) <= 280):
         raise ValueError("entry must be 1-280 characters")
-    if ENTRY != ENTRY.strip() or "\n" in ENTRY or "\r" in ENTRY:
-        raise ValueError("entry must be a single line with no surrounding whitespace")
-    if not ENTRY.strip():
+    if not text.strip():
         raise ValueError("entry must not be only whitespace")
-    ENTRY.encode("utf-8")
+    if "\n" in text or "\r" in text:
+        raise ValueError("entry must be a single line")
+    if text != text.strip():
+        raise ValueError("entry must have no leading or trailing whitespace")
+    text.encode("utf-8")
+
+
+def main() -> None:
+    _validate_entry(ENTRY)
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
